@@ -22,17 +22,17 @@ app.use(cookieParser())
 app.use(morgan("dev"))
   
 
+// import router form here for control all the routers.
+import router from "./routers/user.router"
+import errorMiddleware from "./middlewares/error.Middleware"
+app.use("api/v1/users" , router)
 
-app.get('/demo' , (req , res) => {
-    res.status(200).json({
-        success : true,
-        message : "The demo site is working properly"
-    })
-})
 
+// if user access any default router who we can not made.
 app.all('*' , (req , res) => {
     res.send("OPPS !! error 404 page not found")
 })
 
+app.use(errorMiddleware)
 
 export default app
