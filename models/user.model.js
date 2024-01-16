@@ -57,7 +57,7 @@ const userSchema  = new Schema({
 
 
 // This code for bcrypt our password for more security.
-userSchema.pre("save" , function (next) {
+userSchema.pre("save" ,async function (next) {
 
     // condition if password is modified then we can change it otherwise we not.
     if (!this.isModified("password")) {
@@ -65,15 +65,17 @@ userSchema.pre("save" , function (next) {
     }
 
     // if its changed then.
-    this.password = bcrypt.hash(this.password , 10)
+    this.password = await bcrypt.hash(this.password , 10)
 })
 
 // create jwt token for store all the user info inside this token.
-userSchema.method = {
+userSchema.methods = {
     generateJwtToken : async function() {
         return await jwt.sign(
             {id : this._id , email : this.email , subscription : this.subscription , role : this.role},
+
             process.env.JWT_SECRET,
+
             {
                expiresIn : process.env.JWT_EXPIRY
             }

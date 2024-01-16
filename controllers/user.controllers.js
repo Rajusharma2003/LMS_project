@@ -48,11 +48,10 @@ const register = async (req , res , next) => {
     // when we are send res(allways do not send password so that way password is allways undefiend)
     user.password = undefined
 
+// generate jwt token
+    const token =  user.generateJwtToken()
 
-    const token = user.generateJwtToken()
-
-
-    res.cookies("token" , token , cookieOptions) //cookiesOption is a constant and define at the top.
+    res.cookie("token" , token , cookieOptions) //cookiesOption is a constant and define at the top.
 
 
     res.status(200).json({
@@ -64,7 +63,7 @@ const register = async (req , res , next) => {
 }
 
 
-const login = (req , res ,next) =>{
+const login = async (req , res ,next) =>{
 
   try {
 
@@ -75,17 +74,17 @@ const login = (req , res ,next) =>{
     }
 
     // find inside the db user is exist or not.
-    const user = LmsUser.findOne({ email }).select('+password')
+    const user = await LmsUser.findOne({ email }).select('+password')
 
     if (!user || !user.comparePassword(password)) {
         return next(new AppError("user is not exist please register yourself" , 400))
     }
 
     // if user is exist then we create jwt and send this req.
-    const token = user.generateJwtToken()
+    const token = await user.generateJwtToken()
     user.password = undefined;
 
-    res.cookies("token" , token , cookieOptions )
+    res.cookie("token" , token , cookieOptions )
 
     
     res.status(200).json({

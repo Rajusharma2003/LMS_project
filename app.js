@@ -1,6 +1,9 @@
 import  express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import errorMiddleware from "./middlewares/error.Middleware.js"
+import router from "./routers/user.router.js"
+
 import {config} from'dotenv'
 config()
 
@@ -23,11 +26,11 @@ app.use(morgan("dev"))
   
 
 // import router form here for control all the routers.
-import router from "./routers/user.router.js"
-import errorMiddleware from "./middlewares/error.Middleware.js"
 app.use("/users" , router)
 
-
+app.use('/ping' , function(req , res){
+    res.send('pong')
+})
 // if user access any default router who we can not made.
 app.all('*' , (req , res) => {
     res.send("OPPS !! error 404 page not found")
