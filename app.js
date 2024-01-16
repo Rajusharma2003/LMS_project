@@ -23,9 +23,9 @@ app.use(morgan("dev"))
   
 
 // import router form here for control all the routers.
-import router from "./routers/user.router"
-import errorMiddleware from "./middlewares/error.Middleware"
-app.use("api/v1/users" , router)
+import router from "./routers/user.router.js"
+import errorMiddleware from "./middlewares/error.Middleware.js"
+app.use("/users" , router)
 
 
 // if user access any default router who we can not made.

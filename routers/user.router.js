@@ -1,11 +1,11 @@
 import Router from "express"
-import { getProfile, login, logout, register } from "../controllers/user.controllers"
+import { getProfile, login, logout, register } from "../controllers/user.controllers.js"
 
 
 const router = Router()
 
 
-router.post("/regsiter" , register )
+router.post("/register" , register )
 router.post("/login" , login )
 router.post("/logout" , logout )
 router.post("/me" , getProfile )
