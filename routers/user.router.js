@@ -9,7 +9,7 @@ const router = Router()
 router.post("/register" , register )
 router.post("/login" , login )
 router.post("/logout" , logout )
-router.post("/me" , isLoggedIn, getProfile ) // isLoggedIn is a middleware.
+router.get("/me" , isLoggedIn, getProfile ) // isLoggedIn is a middleware.
 
 
 
