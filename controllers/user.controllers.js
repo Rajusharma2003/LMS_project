@@ -49,7 +49,7 @@ const register = async (req , res , next) => {
     user.password = undefined
 
 // generate jwt token
-    const token =  user.generateJwtToken()
+    const token = await user.generateJwtToken()
 
     res.cookie("token" , token , cookieOptions) //cookiesOption is a constant and define at the top.
 
@@ -76,7 +76,7 @@ const login = async (req , res ,next) =>{
     // find inside the db user is exist or not base on email.
     const user = await LmsUser.findOne({ email }).select('+password')
 
-    if (!user || !user.comparePassword(password)) {
+    if (! (user && await(user.comparePassword(password)))) {
         return next(new AppError("user is not exist please register yourself" , 400))
     }
 
