@@ -70,6 +70,7 @@ userSchema.pre("save" ,async function (next) {
 
 // create jwt token for store all the user info inside this token.
 userSchema.methods = {
+    // create a method for store all the info about the user inside the jwt token.
     generateJwtToken : async function() {
         return await jwt.sign(
             {id : this._id , email : this.email , subscription : this.subscription , role : this.role},

@@ -1,5 +1,6 @@
 import Router from "express"
 import { getProfile, login, logout, register } from "../controllers/user.controllers.js"
+import { isLoggedIn } from "../middlewares/getUser.middleware.js"
 
 
 const router = Router()
@@ -8,7 +9,7 @@ const router = Router()
 router.post("/register" , register )
 router.post("/login" , login )
 router.post("/logout" , logout )
-router.post("/me" , getProfile )
+router.post("/me" , isLoggedIn, getProfile ) // isLoggedIn is a middleware.
 
 
 

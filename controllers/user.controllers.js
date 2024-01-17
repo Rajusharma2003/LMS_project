@@ -37,14 +37,14 @@ const register = async (req , res , next) => {
     })
 
     if (!user) {
-        return next( new AppError('User registration failed , please try againg' , 400))
+        return next( new AppError('User registration failed , please try again' , 400))
         
     }
 
 
     // flie upload 
     // Than we are save our data inside the db. by using .save method.
-    await user.save()
+    await user.save() 
     // when we are send res(allways do not send password so that way password is allways undefiend)
     user.password = undefined
 
@@ -73,7 +73,7 @@ const login = async (req , res ,next) =>{
         return next(new AppError("email and password is required"))
     }
 
-    // find inside the db user is exist or not.
+    // find inside the db user is exist or not base on email.
     const user = await LmsUser.findOne({ email }).select('+password')
 
     if (!user || !user.comparePassword(password)) {
@@ -84,9 +84,10 @@ const login = async (req , res ,next) =>{
     const token = await user.generateJwtToken()
     user.password = undefined;
 
-    res.cookie("token" , token , cookieOptions )
+    // send the user info inside the db.
+    res.cookie("token" , token , cookieOptions ) //cookiesOPtion is constant at the top.
 
-    
+    // And finally send the success info and the user data.
     res.status(200).json({
         success : true,
         message : 'User loggedin successfully',
@@ -102,7 +103,8 @@ const login = async (req , res ,next) =>{
 
 const logout = (req , res , next) => {
 
-    res.cookies( " token" , null , {
+    // In the logout section send the "cookie" always null 
+    res.cookie( " token" , null , {
         secure : true,
         maxAge : 0,
         httpOnly : true
@@ -115,8 +117,22 @@ const logout = (req , res , next) => {
     })
 }
 
-const getProfile = ( req , res , next) => {
+const getProfile = async ( req , res , next) => {
 
+   try {
+     // get the user id by the user.
+     const userInfo = req.user.id;
+     // and check the user is exist or not inside the db.
+     const user = await LmsUser.findById(userInfo)
+ 
+     res.status(200).json({
+         success : true,
+         message : 'your details is fetch successfully',
+         user
+     })
+   } catch (error) {
+    return next( new AppError("failed to fetch profile" , 400))
+   }
 }
 
 
