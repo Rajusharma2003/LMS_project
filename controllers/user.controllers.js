@@ -181,11 +181,69 @@ const getProfile = async ( req , res , next) => {
 }
 
 
+const forgotPassword = async (req , res , next) => {
+
+  const {email} = req.body
+
+  if(!email){
+    return next( new AppError('pls fill the email field' ,400))
+  }
+
+  // check user is available inside the db.
+  const user = await LmsUser.findOne({email})
+
+  if(!user){
+    return next( new AppError('email is not register' , 500))
+  }
+
+
+  // ResetToken is created.
+  const resetToken = await user.generateResetPasswordToken();
+
+
+  // after the token was created we can save inside the db.
+  await user.save()
+
+
+  // this is a frontend url we can send our url in this address.
+  const resetTokenUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`  //this is a frontend url
+
+  // send email funcrion.
+
+  try {
+    // send mail inside the utils files.
+    await sendEmail(email , subject , message)
+
+
+    res.status(200).json({
+      success : true,
+      message : `email is sending successfull on your email ${email}`
+    })
+  } catch (error) {
+
+    user.forgotPasswordToken = undefined
+    user.forgotPasswordExpiry = undefined
+
+    await user.save()
+    return next ( new AppError(error.message , 500))
+  }
+
+}
+
+
+
+
+
+const resetPassword = async (req , res , next) => {
+
+}
 
 
 export {
     register,
     login,
     logout,
-    getProfile
+    getProfile,
+    forgotPassword,
+    resetPassword
 }
