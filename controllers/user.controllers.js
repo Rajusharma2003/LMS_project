@@ -1,5 +1,8 @@
+
 import { LmsUser } from "../models/user.model.js"
 import AppError from "../utils/appError.utils.js"
+import cloudinary from "cloudinary"
+import fs from "fs/promises"
 
 const cookieOptions = {
     maxAge : 7*24*60*60*1000 , //for days only
@@ -42,6 +45,32 @@ const register = async (req , res , next) => {
 
 
     // flie upload 
+ 
+    console.log('file details' , JSON.stringify(req.file));
+    if(req.file){
+
+      try {
+        
+        const result = await cloudinary.v2.uploader.upload(req.file.path , {    //how to upload filename and somemodification
+           folder : "lms",
+           width : 250,
+           height : 250,
+           gravity : "faces",
+           crop : "fill"
+        } );
+
+        if(result){
+          user.avatar.public_id = result.public_id;  //replace your public_id and secure_url to cloudinary public_id and secure_url
+          user.avatar.secure_url = result.secure_url;
+
+          // when file upoaded remove from our server.
+          fs.rm(`upload/${req.file.filename}`)
+        }
+        
+      } catch (error) {
+        return next( new AppError( 'your file is not uploaded successfully'))
+      }
+    }
     // Than we are save our data inside the db. by using .save method.
     await user.save() 
     // when we are send res(allways do not send password so that way password is allways undefiend)
@@ -104,8 +133,15 @@ const logout =async (req , res , next) => {
 
   const { email , password} = req.body
 
+  // if you are not enter your every field.
+  if (!email || !password){
+    return next( new AppError("pls fill all the fields every field is required" , 400 ))
+  }
+
+  // check if user is exist or not if it is not exist they can not be able to logout.
   const userExisted =await LmsUser.findOne({ email }).select('+password')
 
+  // check 
   if(!(userExisted && await(userExisted.comparePassword(password)))){
     return next( new AppError('your are not exist pls login and then try again'))
   }
