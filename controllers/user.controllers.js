@@ -62,47 +62,6 @@ const register = async (req , res , next) => {
 }
 
 
-// const login = async (req , res ,next) =>{
-
-//   try {
-
-//     const {email , password} = req.body
-
-//     if(!email || !password) {
-//         return next(new AppError("email and password is required"))
-//     }
-
-//     // find inside the db user is exist or not base on email.
-//     const user = await LmsUser.findOne({ email }).select('+password')
-
-//     // check password is equal to loggin user.
-//     if (! (user && await(user.comparePassword(password)))) {
-//         return next(new AppError("user is not exist please register yourself" , 400))
-//     }
-
-//     // if user is exist then we create jwt and send this req.
-//     const token = await user.generateJwtToken()
-//     console.log(token);
-//     user.password = undefined;
-
-//     // send the user info inside the db.
-//     res.cookie("token" , token , cookieOptions ) //cookiesOPtion is constant at the top.
-
-//     // And finally send the success info and the user data.
-//     res.status(200).json({
-//         success : true,
-//         message : 'User loggedin successfully',
-//         user
-//     })
-
-//   } catch (error) {
-//     return next(new AppError(error.message , 500))
-//   }
-
-
-// }
-
-
 
 const login = async (req, res, next) => {
   try {
@@ -141,7 +100,17 @@ const login = async (req, res, next) => {
 
 
 
-const logout = (req , res , next) => {
+const logout =async (req , res , next) => {
+
+  const { email , password} = req.body
+
+  const userExisted =await LmsUser.findOne({ email }).select('+password')
+
+  if(!(userExisted && await(userExisted.comparePassword(password)))){
+    return next( new AppError('your are not exist pls login and then try again'))
+  }
+
+
 
     // In the logout section send the "cookie" always null 
     res.cookie( " token" , null , {
