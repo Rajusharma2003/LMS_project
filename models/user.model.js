@@ -100,10 +100,9 @@ userSchema.methods = {
                                          .update(resetToken)
                                          .digest('hex');
 
-        this.forgotPasswordExpiry  = Date.now + 50 * 60 * 1000   // 15 min
-
+        this.forgotPasswordExpiry = Date.now() + 50 * 60 * 1000; // vaild upto 15 min.
+        return resetToken  // if you not return the resetToken the url is show ("undefiend").
     }
-
 
 
 }

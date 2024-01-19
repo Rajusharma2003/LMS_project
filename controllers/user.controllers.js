@@ -1,8 +1,10 @@
 
-import { LmsUser } from "../models/user.model.js"
+import {LmsUser}  from "../models/user.model.js"
 import AppError from "../utils/appError.utils.js"
 import cloudinary from "cloudinary"
 import fs from "fs/promises"
+import sendMail from "../utils/sendEmail.utils.js"
+import crypto from "crypto"
 
 const cookieOptions = {
     maxAge : 7*24*60*60*1000 , //for days only
@@ -199,20 +201,23 @@ const forgotPassword = async (req , res , next) => {
 
   // ResetToken is created.
   const resetToken = await user.generateResetPasswordToken();
-
+console.log(resetToken);
 
   // after the token was created we can save inside the db.
   await user.save()
 
 
   // this is a frontend url we can send our url in this address.
-  const resetTokenUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`  //this is a frontend url
+  const resetTokenUrl = `${process.env.FRONTEND_URL}/forgot-Password/${resetToken}`  //this is a frontend url
 
   // send email funcrion.
+console.log(resetTokenUrl);
+const subject = 'forgot-Password'
+const message = `You can reset your password by clicking <a href=${resetTokenUrl} target="_blank"> reset your password </a>\nif the above link does not work for some resion then copy past this link in new tab ${resetTokenUrl} .\n if you have not requested this , kindly ignore it`
 
   try {
     // send mail inside the utils files.
-    await sendEmail(email , subject , message)
+    await sendMail(email , subject , message)
 
 
     res.status(200).json({
@@ -236,6 +241,49 @@ const forgotPassword = async (req , res , next) => {
 
 const resetPassword = async (req , res , next) => {
 
+  // get a resetToken from req.params.
+  const {resetToken} = req.params;
+
+  // get a resetToken from req.body
+  const {password} = req.body;
+
+  if(!password) {
+    return next( new AppError('pls enter the newPassword field is required ' , 400))
+  }
+
+  // this is for checking url("resetToken") who we are send to user same or not
+  const forgotPasswordToken = crypto
+                                     .createHash('sha256')
+                                     .update(resetToken)
+                                     .digest('hex')
+
+  // for checking ("forgotPasswordToken") and ("forgotPasswordExpiry") inside the db.
+  const user = LmsUser.findOne({
+    forgotPasswordToken,
+    forgotPasswordExpiry : { $gt : Date.now()}
+  })
+ 
+  console.log({ "userdataishere" : user});
+
+  if(!user){
+    return next( new AppError('Token is invailed or Expired , pls try again' , 400))
+  }
+
+  // change password to new password.
+  user.password = password
+  // when password is changed we also set undefined the ("forgotPasswordExpiry") and ("forgotPasswordToken")
+  user.forgotPasswordToken = undefined
+  user.forgotPasswordExpiry = undefined
+
+  // And finally save all the data inside the db.
+   user.save()
+
+
+  res.status(200).json({
+    success : true,
+    message : 'Your password is changed successfully'
+  })
+
 }
 
 
@@ -247,3 +295,20 @@ export {
     forgotPassword,
     resetPassword
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

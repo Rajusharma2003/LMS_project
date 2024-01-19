@@ -11,8 +11,8 @@ router.post("/register" , upload.single("avatar") , register )
 router.post("/login" , login )
 router.post("/logout" , logout )
 router.get("/me" , isLoggedIn, getProfile ) // isLoggedIn is a middleware.
-router.post("forgot-Password" , forgotPassword)
-router.post("reset-Password/:resetToken" , resetPassword)
+router.post("/forgotPassword" , forgotPassword)
+router.post("/resetPassword/:resetToken" , resetPassword)
 
 
 export default router
