@@ -258,7 +258,7 @@ const resetPassword = async (req , res , next) => {
                                      .digest('hex')
 
   // for checking ("forgotPasswordToken") and ("forgotPasswordExpiry") inside the db.
-  const user = LmsUser.findOne({
+  const user =  await LmsUser.findOne({
     forgotPasswordToken,
     forgotPasswordExpiry : { $gt : Date.now()}
   })
@@ -276,7 +276,7 @@ const resetPassword = async (req , res , next) => {
   user.forgotPasswordExpiry = undefined
 
   // And finally save all the data inside the db.
-   user.save()
+   await user.save()
 
 
   res.status(200).json({
