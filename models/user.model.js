@@ -92,9 +92,10 @@ userSchema.methods = {
 
     generateResetPasswordToken :async function () {
 
-        // create a reset Token.
+        // create a reset Token url.
         const resetToken = crypto.randomBytes(20).toString('hex');
 
+        // save all the user info inside the db for double check the user.
         this.forgotPasswordToken = crypto
                                          .createHash('sha256')
                                          .update(resetToken)

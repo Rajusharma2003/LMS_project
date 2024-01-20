@@ -1,14 +1,13 @@
 // import here the nodemailer code.
 import nodemailer from "nodemailer"
 import AppError from "./appError.utils.js";
-import e from "express";
 
 const sendMail = async function(email , subject , message ){
 try {
     
-    console.log('email :'  , email);
-    console.log('message :'  , message);
-    console.log('subject :'  , subject);
+    // console.log('email :'  , email);
+    // console.log('message :'  , message);
+    // console.log('subject :'  , subject);
     
 let transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,

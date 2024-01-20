@@ -53,6 +53,7 @@ const register = async (req , res , next) => {
 
       try {
         
+        // cloudinary config is set inside the index.js
         const result = await cloudinary.v2.uploader.upload(req.file.path , {    //how to upload filename and somemodification
            folder : "lms",
            width : 250,
@@ -168,7 +169,8 @@ const getProfile = async ( req , res , next) => {
 
    try {
      // get the user id by the user.
-     const userInfo = req.user.id;
+     const userInfo = req.user.id;  //we get the user details inside the ("req.user") from isLoggedIn middleware.
+     
      // and check the user is exist or not inside the db.
      const user = await LmsUser.findById(userInfo)
  
@@ -200,14 +202,14 @@ const forgotPassword = async (req , res , next) => {
 
 
   // ResetToken is created.
-  const resetToken = await user.generateResetPasswordToken();
+  const resetToken = await user.generateResetPasswordToken();  //this is a method inside the model.js
 console.log(resetToken);
 
   // after the token was created we can save inside the db.
   await user.save()
 
 
-  // this is a frontend url we can send our url in this address.
+  // this is a frontend url we can send our url inside the user mail.
   const resetTokenUrl = `${process.env.FRONTEND_URL}/forgot-Password/${resetToken}`  //this is a frontend url
 
   // send email funcrion.
@@ -258,7 +260,7 @@ const resetPassword = async (req , res , next) => {
                                      .digest('hex')
 
   // for checking ("forgotPasswordToken") and ("forgotPasswordExpiry") inside the db.
-  const user =  await LmsUser.findOne({
+  const user =  await LmsUser.findOne({  //await is improtent
     forgotPasswordToken,
     forgotPasswordExpiry : { $gt : Date.now()}
   })
@@ -287,13 +289,169 @@ const resetPassword = async (req , res , next) => {
 }
 
 
+
+const changePassword = async (req , res , next) => {
+
+  const {oldPassword , newPassword} = req.body
+  // 'req.user' is define inside the "isLoggedin" middlerware save all the user info.
+  const {id} = req.user
+
+  if(!oldPassword || !newPassword){
+    return next( new AppError("All fields are menditary" , 400))
+  }
+
+  try {
+    
+  const user = await LmsUser.findById(id).select("+password")
+
+  if(!user){
+    return next( new AppError("User details is not found" , 400))
+
+  }
+
+  const vaildPassword = await user.comparePassword(oldPassword);
+
+  if(!vaildPassword){
+    return next( new AppError("password does not match successfully pls try again" , 400))
+  }
+
+  user.password = newPassword
+ await user.save()
+ user.password = undefined
+
+  res.status(200).json({
+    success : true,
+    message : ' password changed successfully'
+
+  })
+  } catch (error) {
+     return next ( new AppError('Error changing password'))
+  }
+
+}
+
+
+
+
+
+
+
+
+// const changePassword = async (req, res, next) => {
+//   const { oldPassword, newPassword } = req.body;
+//   const { id } = req.user;
+
+//   if (!oldPassword || !newPassword) {
+//     return next(new AppError("All fields are mandatory", 400));
+//   }
+
+//   try {
+//     const user = await LmsUser.findById(id).select("+password");
+
+//     if (!user) {
+//       return next(new AppError("User details not found", 400));
+//     }
+
+//     const validPassword = await user.comparePassword(oldPassword);
+
+//     if (!validPassword) {
+//       return next(new AppError("Incorrect old password, please try again", 400));
+//     }
+
+//     // Update the password with the new one
+//     user.password = newPassword;
+
+//     // Save the user with the updated password
+//     await user.save();
+
+//     // It's a good practice to set the password to undefined before sending the response
+//     user.password = undefined;
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Password changed successfully'
+//     });
+//   } catch (error) {
+//     return next(new AppError('Error changing password', 500));
+//   }
+// };
+
+
+const updateProfile = async (req , res , next) => {
+
+const {fullName } = req.body
+
+const {id} = req.user   // user info save inside the isLoggenin method.
+
+
+try {
+
+  
+const user = await LmsUser.findById(id)
+
+if(!user){
+  return next ( new AppError('user is does not exist pls try again' , 400))
+}
+
+if(fullName){
+user.fullName = fullName
+}
+
+if(req.file){
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id)
+
+
+  // past
+
+  try {
+        
+    const result = await cloudinary.v2.uploader.upload(req.file.path , {    //how to upload filename and somemodification
+       folder : "lms",
+       width : 250,
+       height : 250,
+       gravity : "faces",
+       crop : "fill"
+    } );
+
+    if(result){
+      user.avatar.public_id = result.public_id;  //replace your public_id and secure_url to cloudinary public_id and secure_url
+      user.avatar.secure_url = result.secure_url;
+
+      // when file upoaded remove from our server.
+      fs.rmSync(`upload/${req.file.filename}`)
+    }
+    
+  } catch (error) {
+    return next( new AppError( 'your file is not uploaded successfully'))
+  }
+}
+
+await user.save()
+
+res.status(200).json({
+  success : true,
+  message : 'user update successfully'
+})
+  
+} catch (error) {
+  
+  return next( new AppError('Error to update user profile' , 400))
+}
+
+
+
+
+}
+
 export {
     register,
     login,
     logout,
     getProfile,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    changePassword,
+    updateProfile
 }
 
 
