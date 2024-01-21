@@ -302,6 +302,7 @@ const changePassword = async (req , res , next) => {
 
   try {
     
+    // search inside the db is user exist there.
   const user = await LmsUser.findById(id).select("+password")
 
   if(!user){
@@ -309,14 +310,18 @@ const changePassword = async (req , res , next) => {
 
   }
 
+  // campare new and old password indsidet this.
   const vaildPassword = await user.comparePassword(oldPassword);
 
   if(!vaildPassword){
     return next( new AppError("password does not match successfully pls try again" , 400))
   }
 
+  // if all condition is good than change the old password.
   user.password = newPassword
+  // and finally save inside the db.
  await user.save()
+//  and always remember send anything you undefined the password.
  user.password = undefined
 
   res.status(200).json({
@@ -332,53 +337,9 @@ const changePassword = async (req , res , next) => {
 
 
 
-
-
-
-
-
-// const changePassword = async (req, res, next) => {
-//   const { oldPassword, newPassword } = req.body;
-//   const { id } = req.user;
-
-//   if (!oldPassword || !newPassword) {
-//     return next(new AppError("All fields are mandatory", 400));
-//   }
-
-//   try {
-//     const user = await LmsUser.findById(id).select("+password");
-
-//     if (!user) {
-//       return next(new AppError("User details not found", 400));
-//     }
-
-//     const validPassword = await user.comparePassword(oldPassword);
-
-//     if (!validPassword) {
-//       return next(new AppError("Incorrect old password, please try again", 400));
-//     }
-
-//     // Update the password with the new one
-//     user.password = newPassword;
-
-//     // Save the user with the updated password
-//     await user.save();
-
-//     // It's a good practice to set the password to undefined before sending the response
-//     user.password = undefined;
-
-//     res.status(200).json({
-//       success: true,
-//       message: 'Password changed successfully'
-//     });
-//   } catch (error) {
-//     return next(new AppError('Error changing password', 500));
-//   }
-// };
-
-
 const updateProfile = async (req , res , next) => {
 
+  // get the user name by user.
 const {fullName } = req.body
 
 const {id} = req.user   // user info save inside the isLoggenin method.
@@ -386,18 +347,21 @@ const {id} = req.user   // user info save inside the isLoggenin method.
 
 try {
 
-  
+// find the user is exist or not inside the db.
 const user = await LmsUser.findById(id)
 
 if(!user){
   return next ( new AppError('user is does not exist pls try again' , 400))
 }
 
+// if user is send New fullName then change the old fullName inside the db.
 if(fullName){
 user.fullName = fullName
 }
 
+// if user is send our new user profile then we use "destroy" inside the coudinary and upload new image.
 if(req.file){
+  // delete the old image in cloudinary.
   await cloudinary.v2.uploader.destroy(user.avatar.public_id)
 
 
@@ -405,6 +369,7 @@ if(req.file){
 
   try {
         
+    // upload new image inside the cloudinary.
     const result = await cloudinary.v2.uploader.upload(req.file.path , {    //how to upload filename and somemodification
        folder : "lms",
        width : 250,
@@ -426,6 +391,7 @@ if(req.file){
   }
 }
 
+// And also save all the information inside the db.
 await user.save()
 
 res.status(200).json({
@@ -437,7 +403,6 @@ res.status(200).json({
   
   return next( new AppError('Error to update user profile' , 400))
 }
-
 
 
 
