@@ -3,6 +3,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 import errorMiddleware from "./middlewares/error.Middleware.js"
 import router from "./routers/user.router.js"
+import courseRouter from "./routers/course.router.js"
 
 import {config} from'dotenv'
 config()
@@ -32,6 +33,7 @@ app.use(morgan("dev"))
 
 // import router form here for control all the routers.
 app.use("/users" , router)
+app.use('/api/v1/courses' , courseRouter)
 
 // This is a demo 
 app.use('/ping' , function(req , res){
