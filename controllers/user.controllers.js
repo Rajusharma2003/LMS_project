@@ -48,7 +48,7 @@ const register = async (req , res , next) => {
 
     // flie upload 
  
-    console.log('file details' , JSON.stringify(req.file));
+    // console.log('file details' , JSON.stringify(req.file));
     if(req.file){
 
       try {
