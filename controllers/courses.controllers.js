@@ -4,7 +4,8 @@ import AppError from "../utils/appError.utils.js"
 const courses = async function (req , res , next ) {
 
     try {
-    const courses = await Course.find({}).select("-lectures")
+
+    const courses = await Course.find({}).select("-lectures");
 
     if(!courses){
         return next(
@@ -29,6 +30,27 @@ const courses = async function (req , res , next ) {
 
 const getLetcureByCourseId = async function (req , res ,next) {
 
+    try {
+        
+        const {id} = req.params;
+        const courses = await Course.findById(id);
+
+        if(!courses){
+            return next(
+                new AppError('courses lecture in not find' , 400)
+            )
+        }
+
+        req.status(200).json({
+            success : true,
+            message : 'courses lecture is fetch successfully',
+            lectures : courses.lectures
+        })
+    } catch (error) {
+        return next(
+            new AppError(error.message , 500)
+        )
+    }
 }
 
 
