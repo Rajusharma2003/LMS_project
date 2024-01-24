@@ -383,7 +383,7 @@ if(req.file){
       user.avatar.secure_url = result.secure_url;
 
       // when file upoaded remove from our server.
-      fs.rmSync(`upload/${req.file.filename}`)
+      fs.rm(`upload/${req.file.filename}`)
     }
     
   } catch (error) {

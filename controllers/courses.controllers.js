@@ -1,7 +1,7 @@
 import Course from "../models/coursesSchema.models.js"
 import AppError from "../utils/appError.utils.js";
 import cloudinary from 'cloudinary';
-import fs from 'fs'
+import fs from 'fs/promises'
 
 const courses = async function (req , res , next ) {
 
@@ -60,16 +60,19 @@ const createCoures = async function (req , res , next) {
 
     try {
         
-        const {title , description , category , createdBy  } = req.body
+        // get all the details from the user.
+        const {title , description , category , createdBy } = req.body
 
-    if(!title || !description || category || createdBy){
+
+        // check some condition 
+    if(!title || !description || !category || !createdBy){
         return next(
             new AppError('All fields are required' , 400)
         )
     }
 
 
-    // create instence.
+    // create instence inside the database.
     const course = await Course.create({
         title,
         description,
@@ -78,8 +81,11 @@ const createCoures = async function (req , res , next) {
         thumbnail : {
             public_id : 'dummy',
             secure_url : 'dummy', //because these file is required.
-        }
+        },
     })
+
+    // console.log(course);
+
 
     if(!course){
         return next(
@@ -88,22 +94,28 @@ const createCoures = async function (req , res , next) {
     }
 
 
+    // Incase user send any file then this feature is exicute.
     if(req.file){
+    // console.log(req.file);
 
         try {
 
+            // upload on cloudinary
             const result = await cloudinary.v2.uploader.upload(req.file.path , {
                 folder : 'lms'
             })
     
+            // set config 
             if(result){
                 course.thumbnail.public_id = result.public_id;
                 course.thumbnail.secure_url = result.secure_url;
             }
     
-            fs.rmSync(`upload/${req.file.filename}`);
+            // when file is upload successfully file is remove inside the local server.
+            fs.rm(`upload/${req.file.filename}`);
 
         } catch (error) {
+            console.log(error.message);
             return next(
                 new AppError('!! Error file is not upload successfully' , 500)
             )
@@ -111,6 +123,7 @@ const createCoures = async function (req , res , next) {
       
     }
 
+    // And finally save all the data inside the database.
     await course.save();
 
     res.status(200).json({
@@ -119,16 +132,16 @@ const createCoures = async function (req , res , next) {
     });
 
     } catch (error) {
-        
+        console.log(error.message);
         return next(
             new AppError(' !! Error course created unsuccessfully' , 500)
         )
     }
 
 
-
-
 }
+
+
 
 
 const updateCoures = async function (req , res , next) {
@@ -138,7 +151,7 @@ const updateCoures = async function (req , res , next) {
     const {id} = req.params;
 
  
-    const course = await Course.findByIdAndUpdate(id,{$set : req.body} , {runValidators : true})
+    const course = await Course.findByIdAndUpdate(id, {$set : req.body} , {runValidators : true})
 
     if(!course){
         return next(
@@ -164,6 +177,34 @@ const updateCoures = async function (req , res , next) {
 
 
 const deleteCoures = async function (req , res , next) {
+
+    try {
+        
+        const {id} = req.params;
+
+    const course = Course.findById(id);
+
+    if(!course){
+        return next(
+            new AppError('coures with given id does not exist !! try again')
+        )
+    }
+
+    await course.findByIdAndDelete(id)
+
+    res.status(200).json({
+        success : true,
+        message : 'Your course is delete successfully'
+    })
+
+
+    } catch (error) {
+        return next(
+            new AppError('!! Error coures is not delete successfully !! try again')
+        )
+    }
+
+
 
 }
 

@@ -9,8 +9,9 @@ const router = Router();
 router.route("/")
             .get(courses)
             .post(
-                upload.single('thumbnail'),
+                upload.single('thumbnail'), //middleware
                 createCoures)
+
 router.route('/:id')
             .get(isLoggedIn , getLetcureByCourseId)
             .put(updateCoures)
