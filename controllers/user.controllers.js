@@ -7,7 +7,7 @@ import sendMail from "../utils/sendEmail.utils.js"
 import crypto from "crypto"
 
 const cookieOptions = {
-    maxAge : 7*24*60*60*1000 , //for days only
+    maxAge : 7*24*60*60*1000 , //for 7 days only
     httpOnly : true,
 }
 
@@ -22,7 +22,7 @@ const register = async (req , res , next) => {
    
     // check inside the db if user is already exist or not.
     const userExist =  await LmsUser.findOne({
-        $or : [{email} , {fullName}]
+        $or : [{email}]
     })
 
     if (userExist) {
@@ -47,7 +47,6 @@ const register = async (req , res , next) => {
 
 
     // flie upload 
- 
     // console.log('file details' , JSON.stringify(req.file));
     if(req.file){
 
@@ -108,7 +107,7 @@ const login = async (req, res, next) => {
 
     if (!(user && (await user.comparePassword(password)))) {
       return next(
-        new AppError("user is not exist please register yourself", 400)
+        new AppError("user and password is not match or exist please register yourself", 400)
       );
     }
 
@@ -138,7 +137,7 @@ const logout =async (req , res , next) => {
 
   // if you are not enter your every field.
   if (!email || !password){
-    return next( new AppError("pls fill all the fields every field is required" , 400 ))
+    return next( new AppError("pls give me email and password every field is required" , 400 ))
   }
 
   // check if user is exist or not if it is not exist they can not be able to logout.
@@ -226,6 +225,8 @@ const message = `You can reset your password by clicking <a href=${resetTokenUrl
       success : true,
       message : `email is sending successfull on your email ${email}`
     })
+
+    
   } catch (error) {
 
     user.forgotPasswordToken = undefined
@@ -250,7 +251,7 @@ const resetPassword = async (req , res , next) => {
   const {password} = req.body;
 
   if(!password) {
-    return next( new AppError('pls enter the newPassword field is required ' , 400))
+    return next( new AppError('pls enter the Password field is required ' , 400))
   }
 
   // this is for checking url("resetToken") who we are send to user same or not

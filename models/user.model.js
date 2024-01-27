@@ -58,7 +58,7 @@ const userSchema  = new Schema({
 
 
 // This code for bcrypt our password for more security.
-userSchema.pre("save" ,async function (next) {
+userSchema.pre("save" , async function (next) {
 
     // condition if password is modified then we can change it otherwise we not.
     if (!this.isModified("password")) {

@@ -180,7 +180,7 @@ const deleteCoures = async function (req , res , next) {
 
     try {
         
-        const {id} = req.params;
+    const {id} = req.params;
 
     const course = Course.findById(id);
 
@@ -208,10 +208,116 @@ const deleteCoures = async function (req , res , next) {
 
 }
 
+
+
+const addLectureToCourseById = async function( req , res, next) {
+
+    const {title , description} = req.body
+
+    const {id} = req.params
+
+    if(!title || !description){
+        return next(
+            new AppError('title and description is not discribed pls fill all the entry' , 403)
+        )
+    }
+
+    const course = await Course.findById(id)
+
+    if(!course){
+        return next(
+            new AppError('This course is not avilable pls check you course details' , 500)
+        )
+    }
+
+
+    const lectureData = {
+        title,
+        description,
+        lecture : {}
+    }
+
+    if(req.file){
+
+        try {
+
+            // upload on cloudinary
+            const result = await cloudinary.v2.uploader.upload(req.file.path , {
+                folder : 'lms'
+            })
+    
+            // set config 
+            if(result){
+                lectureData.lecture.public_id = result.public_id;
+                lectureData.lecture.secure_url = result.secure_url;
+            }
+    
+            // when file is upload successfully file is remove inside the local server.
+            fs.rm(`upload/${req.file.filename}`);
+
+        } catch (error) {
+            console.log(error.message);
+            return next(
+                new AppError('!! Error file is not upload successfully' , 500)
+            )
+        }
+
+    }
+
+
+    course.lectures.push(lectureData)
+    course.numberOfLectures = course.lectures.length;
+
+    await course.save();
+
+
+    res.status(200).json({
+        success : true,
+        message : 'Lecture successfully add to the course'
+    })
+
+}
+
+
+
+const deleteLecture = async function (req , res , next){
+
+   try {
+    
+
+    const {id} = req.params
+
+    const checkLecture = await Course.findById(id)
+
+    if(!checkLecture){
+        return next(
+            new AppError('Lecture dose not avialable so you can not delete ', 500)
+        )
+    }
+
+    await Course.findByIdAndDelete(id)
+
+    res.status(200).json({
+        success : true,
+        message : 'You lecture is deleted successfully'
+    })
+
+
+   } catch (error) {
+    
+    return next(
+        new AppError('failed to delete' , 500)
+    )
+   }
+    
+
+}
 export {
     courses,
     getLetcureByCourseId,
     createCoures,
     updateCoures,
-    deleteCoures
+    deleteCoures,
+    addLectureToCourseById,
+    deleteLecture
 }

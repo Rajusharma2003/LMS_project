@@ -43,18 +43,19 @@ const courseSchema = new Schema({
             },
 
             description : {
-                type : String
+                type : String,
                 //if you can add some validation.
             },
 
             lecture : {
                 public_id : {
                     type: String,
-                    
+                required : [true , 'lecture']
                 },
         
                 secure_url : {
-                    type: String,
+                required : [true , 'lecture'],
+                type: String,
                     
                 }
             }

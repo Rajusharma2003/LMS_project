@@ -2,13 +2,23 @@
 import nodemailer from "nodemailer"
 import AppError from "./appError.utils.js";
 
+
+// use inside the forgot password
 const sendMail = async function(email , subject , message ){
 try {
+
+
+  if(!email || !subject || !message){
+    return next(
+      new AppError("email subject message are not available pls give all the information" , 403)
+    )
+  }
     
     // console.log('email :'  , email);
     // console.log('message :'  , message);
     // console.log('subject :'  , subject);
     
+    // there all property get from the mailtrap website.
 let transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port : process.env.SMTP_PORT,
