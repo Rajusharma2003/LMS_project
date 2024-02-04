@@ -1,9 +1,10 @@
-import  express, { urlencoded } from "express"
+
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import errorMiddleware from "./middlewares/error.Middleware.js"
 import router from "./routers/user.router.js"
 import courseRouter from "./routers/course.router.js"
+import paymentRouter from "./routers/payment.router.js"
 
 import {config} from'dotenv'
 config()
@@ -34,6 +35,7 @@ app.use(morgan("dev"))
 // import router form here for control all the routers.
 app.use("/users" , router)
 app.use('/api/v1/courses' , courseRouter)
+app.use('/api/v1/payment' , paymentRouter)
 
 // This is a demo 
 app.use('/ping' , function(req , res){

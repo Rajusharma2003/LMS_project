@@ -34,12 +34,13 @@ router.route('/:id')
                 authValidUserCheck("ADMIN"),
                 upload.single('lecture'), //middleware
                 addLectureToCourseById
+            )
+
 
             .delete(
                 isLoggedIn,
                 authValidUserCheck("ADMIN"),
                 deleteLecture
-            )
             )    
 
 // router.get("/" , courses);
