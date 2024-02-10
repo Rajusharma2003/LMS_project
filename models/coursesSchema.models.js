@@ -50,12 +50,12 @@ const courseSchema = new Schema({
             lecture : {
                 public_id : {
                     type: String,
-                required : [true , 'lecture']
+                    required : [true , 'lecture']
                 },
         
                 secure_url : {
-                required : [true , 'lecture'],
-                type: String,
+                    required : [true , 'lecture'],
+                    type: String,
                     
                 }
             }

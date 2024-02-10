@@ -39,7 +39,26 @@ const authValidUserCheck = (...role) => async(req , res , next) => {
 }
 
 
+
+const authorizeSubscriber = async (req , res ,next) => {
+
+    // get subscription status from the user schema.
+    const subscription = req.user.subscription
+    // get the user role.
+    const currentUserRole = req.user.role
+    
+    // and finally check user is access or not .
+
+    if(currentUserRole !== "ADMIN" && subscription !== "active"){
+        return next(
+            new AppError('pls subcribe for access this route' , 400)
+        )
+    }
+}
+
+
 export {
     isLoggedIn,
-    authValidUserCheck
+    authValidUserCheck,
+    authorizeSubscriber
 }
